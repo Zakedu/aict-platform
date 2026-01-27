@@ -5,7 +5,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useExam } from '../context/ExamContext';
-import { Download, Award, TrendingUp, CheckCircle2, Target, Lightbulb, Share2, FileText, AlertCircle, Loader2, Key, X, QrCode } from 'lucide-react';
+import { Download, Award, TrendingUp, CheckCircle2, Target, Lightbulb, Share2, FileText, AlertCircle, Loader2, Key, X, QrCode, ChevronDown, ChevronUp, BarChart3, BookOpen, Briefcase, Star, ArrowRight } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
 import { part1Questions, part2Questions } from '../data/questions';
 import { getJobTasks, getJobInfo } from '../data/part3-data';
@@ -59,6 +59,61 @@ const DEMO_SCORES = {
     { taskId: 'task3', score: 14, maxScore: 20, feedback: '결과 검증 부분을 보완하면 좋겠습니다.' },
   ],
 };
+
+// Part 3 상세 채점 결과 (데모용)
+const DEMO_PART3_DETAILED = [
+  {
+    taskId: 'hr-task-1',
+    taskTitle: '채용 공고 작성',
+    taskDescription: 'AI를 활용하여 신입 개발자 채용 공고를 작성하세요.',
+    score: 18,
+    maxScore: 20,
+    gradingTime: '2026-01-15 14:23:45',
+    criteria: [
+      { name: '프롬프트 구조', score: 5, maxScore: 5, comment: '역할-맥락-지시-제약-출력 구조를 명확하게 사용함' },
+      { name: '직무 요구사항 반영', score: 4, maxScore: 5, comment: '대부분의 요구사항을 잘 반영했으나, 우대사항 구체화 필요' },
+      { name: '개인정보 보호', score: 5, maxScore: 5, comment: '민감 정보 없이 적절하게 작성됨' },
+      { name: '결과물 품질', score: 4, maxScore: 5, comment: '전문적이고 매력적인 공고 생성, 일부 표현 다듬기 필요' },
+    ],
+    feedback: '프롬프트 설계가 체계적이며, AI 도구를 효과적으로 활용했습니다. 채용 공고의 전문성이 높고, 회사 문화와 직무 내용이 잘 드러납니다. 우대사항을 더 구체화하면 더 좋은 지원자를 유치할 수 있을 것입니다.',
+    strengths: ['명확한 프롬프트 구조 사용', '직무 요건 상세 기술', '회사 문화 적절히 반영'],
+    improvements: ['우대사항 구체화 필요', '연봉 범위 표기 검토'],
+  },
+  {
+    taskId: 'hr-task-2',
+    taskTitle: '면접 질문 생성',
+    taskDescription: 'AI를 활용하여 역량 기반 면접 질문을 생성하세요.',
+    score: 16,
+    maxScore: 20,
+    gradingTime: '2026-01-15 14:25:12',
+    criteria: [
+      { name: '프롬프트 구조', score: 4, maxScore: 5, comment: '기본 구조는 갖췄으나 제약 조건이 부족함' },
+      { name: '역량 연계성', score: 4, maxScore: 5, comment: '핵심 역량과 질문이 잘 연결됨' },
+      { name: '편향 검토', score: 4, maxScore: 5, comment: '대부분 중립적이나 일부 질문 재검토 필요' },
+      { name: '실용성', score: 4, maxScore: 5, comment: '실제 면접에 바로 활용 가능한 수준' },
+    ],
+    feedback: '역량 기반 면접 질문이 체계적으로 생성되었습니다. 다만, AI가 생성한 질문 중 일부는 무의식적 편향을 유발할 수 있으므로, 최종 사용 전 반드시 검토가 필요합니다. 후속 질문 시나리오도 함께 준비하면 더욱 효과적입니다.',
+    strengths: ['역량별 질문 분류 명확', '행동 기반 질문 형식 활용', '평가 기준 연계'],
+    improvements: ['편향 가능성 있는 질문 재검토', '후속 질문 시나리오 보완'],
+  },
+  {
+    taskId: 'hr-task-3',
+    taskTitle: '지원자 서류 분석',
+    taskDescription: 'AI를 활용하여 지원자 이력서를 분석하고 평가하세요.',
+    score: 14,
+    maxScore: 20,
+    gradingTime: '2026-01-15 14:27:33',
+    criteria: [
+      { name: '프롬프트 구조', score: 4, maxScore: 5, comment: '분석 기준 명시가 잘 되어 있음' },
+      { name: '개인정보 처리', score: 3, maxScore: 5, comment: '일부 개인정보 마스킹 누락됨' },
+      { name: '분석 품질', score: 4, maxScore: 5, comment: '핵심 역량 분석이 체계적임' },
+      { name: '결과 검증', score: 3, maxScore: 5, comment: 'AI 분석 결과에 대한 교차 검증 부족' },
+    ],
+    feedback: 'AI를 활용한 이력서 분석 능력은 양호하나, 개인정보 보호 측면에서 개선이 필요합니다. 지원자의 연락처, 주소 등 민감 정보는 반드시 마스킹 후 AI에 입력해야 합니다. 또한 AI의 평가 결과를 그대로 수용하지 말고, 인간의 판단으로 최종 검증하는 절차를 추가하세요.',
+    strengths: ['분석 기준의 체계적 설정', '역량 매칭 분석 우수', '정량적 평가 시도'],
+    improvements: ['개인정보 마스킹 철저히', 'AI 판단에 대한 검증 절차 추가', '편향 방지 장치 마련'],
+  },
+];
 
 // 루브릭 기반 피드백 데이터
 const RUBRIC_FEEDBACK: Record<string, { level: 'excellent' | 'good' | 'needs_improvement'; description: string; rubric: string[] }> = {
@@ -118,67 +173,139 @@ const RUBRIC_FEEDBACK: Record<string, { level: 'excellent' | 'good' | 'needs_imp
   },
 };
 
-// 직무별 피드백 데이터
-const JOB_FEEDBACK: Record<string, { strengths: string[]; improvements: string[]; recommendation: string }> = {
+// 직무별 피드백 데이터 (상세 버전)
+const JOB_FEEDBACK: Record<string, {
+  strengths: { title: string; description: string; score: number }[];
+  improvements: { title: string; description: string; priority: 'high' | 'medium' | 'low' }[];
+  recommendation: string;
+  nextSteps: string[];
+  industryBenchmark: { avgScore: number; topScore: number; yourRank: string };
+  skillGaps: { skill: string; current: number; required: number }[];
+}> = {
   HR: {
     strengths: [
-      '채용 공고 작성 시 AI 활용 능력 우수',
-      '면접 질문 생성에 적절한 프롬프트 사용',
-      '개인정보 보호 의식이 높음',
+      { title: '채용 공고 작성', description: 'AI를 활용하여 전문적이고 매력적인 채용 공고를 효과적으로 작성합니다. 직무 요건과 회사 문화를 잘 반영합니다.', score: 92 },
+      { title: '면접 질문 설계', description: '역량 기반 면접 질문을 체계적으로 생성하며, 평가 기준과의 연계성이 우수합니다.', score: 85 },
+      { title: '개인정보 보호 의식', description: '채용 과정에서 지원자 개인정보 보호의 중요성을 잘 인식하고 있습니다.', score: 88 },
     ],
     improvements: [
-      '지원자 평가 시 AI 편향 검토 필요',
-      '채용 데이터 분석 시 교차 검증 강화',
+      { title: 'AI 편향 검토 강화', description: 'AI가 생성한 평가 기준이나 질문에 무의식적 편향이 포함될 수 있습니다. 다양성과 포용성 관점에서 최종 검토가 필요합니다.', priority: 'high' },
+      { title: '교차 검증 절차 수립', description: 'AI 분석 결과를 그대로 수용하지 않고, 인간 판단과 교차 검증하는 체계적인 절차를 마련하세요.', priority: 'high' },
+      { title: '데이터 마스킹 습관화', description: '지원자 정보를 AI에 입력하기 전 민감 정보 마스킹을 습관화하세요.', priority: 'medium' },
     ],
-    recommendation: 'HR 업무에서 AI를 효과적으로 활용할 준비가 되어 있습니다. 채용 결정 시 AI 결과물에 대한 비판적 검토를 강화하면 더욱 좋겠습니다.',
+    recommendation: 'HR 업무에서 AI를 효과적으로 활용할 준비가 되어 있습니다. 특히 채용 공고 작성과 면접 질문 생성에서 높은 역량을 보여주셨습니다. 다만, AI 도구가 채용 의사결정에 미치는 영향을 고려할 때, 편향 검토와 개인정보 보호에 더욱 주의를 기울여야 합니다. AI는 보조 도구로 활용하고, 최종 판단은 반드시 인간이 내려야 합니다.',
+    nextSteps: [
+      '채용 AI 활용 가이드라인 수립 및 팀 내 공유',
+      'AI 생성 콘텐츠의 편향 검토 체크리스트 작성',
+      '개인정보 마스킹 자동화 도구 도입 검토',
+      '분기별 AI 활용 사례 리뷰 및 개선점 도출',
+    ],
+    industryBenchmark: { avgScore: 72, topScore: 95, yourRank: '상위 15%' },
+    skillGaps: [
+      { skill: 'AI 편향 감지', current: 65, required: 85 },
+      { skill: '데이터 프라이버시', current: 78, required: 90 },
+      { skill: '결과 검증', current: 70, required: 85 },
+    ],
   },
   MKT: {
     strengths: [
-      '마케팅 콘텐츠 생성 능력 우수',
-      '타겟 오디언스 맞춤 프롬프트 설계',
-      'A/B 테스트 시나리오 구성 능력',
+      { title: '콘텐츠 생성', description: 'AI를 활용하여 다양한 마케팅 콘텐츠를 효과적으로 생성합니다. 톤앤매너 조절 능력이 우수합니다.', score: 90 },
+      { title: '타겟 오디언스 분석', description: '페르소나 기반 프롬프트 설계로 타겟 맞춤형 콘텐츠를 생성합니다.', score: 87 },
+      { title: 'A/B 테스트 설계', description: '마케팅 실험을 위한 변형 콘텐츠 생성 능력이 우수합니다.', score: 82 },
     ],
     improvements: [
-      '저작권 관련 검토 강화 필요',
-      '브랜드 톤앤매너 일관성 유지',
+      { title: '저작권 검토 강화', description: 'AI 생성 콘텐츠의 저작권 및 원본 소스 확인이 필요합니다. 특히 이미지와 카피의 유사성 검토가 중요합니다.', priority: 'high' },
+      { title: '브랜드 가이드라인 준수', description: 'AI 출력물이 브랜드 가이드라인에 부합하는지 체계적으로 검토하세요.', priority: 'medium' },
+      { title: '팩트 체크 강화', description: '마케팅 메시지에 포함된 정보의 정확성을 반드시 검증하세요.', priority: 'medium' },
     ],
-    recommendation: '마케팅 영역에서 AI 활용도가 높습니다. 생성된 콘텐츠의 저작권 및 브랜드 가이드라인 준수 여부를 꼼꼼히 확인하세요.',
+    recommendation: '마케팅 영역에서 AI 활용도가 매우 높습니다. 콘텐츠 생성 속도와 품질 면에서 우수한 역량을 보여주셨습니다. 다만, AI가 생성한 콘텐츠의 저작권 문제와 브랜드 일관성 유지에 더 주의를 기울여야 합니다. 생성된 콘텐츠가 법적으로 안전하고 브랜드 가치에 부합하는지 최종 검토하는 습관을 들이세요.',
+    nextSteps: [
+      'AI 생성 콘텐츠 저작권 검토 프로세스 수립',
+      '브랜드 가이드라인 기반 검수 체크리스트 작성',
+      '마케팅 팩트 체크 도구 활용 방안 검토',
+      'AI 활용 마케팅 성과 측정 지표 개발',
+    ],
+    industryBenchmark: { avgScore: 70, topScore: 93, yourRank: '상위 20%' },
+    skillGaps: [
+      { skill: '저작권 이해', current: 68, required: 85 },
+      { skill: '팩트 체크', current: 72, required: 88 },
+      { skill: '브랜드 일관성', current: 75, required: 85 },
+    ],
   },
   SALES: {
     strengths: [
-      '고객 응대 스크립트 작성 능력',
-      '제안서 초안 생성 활용',
-      '고객 데이터 분석 이해',
+      { title: '고객 응대 스크립트', description: '상황별 고객 응대 스크립트를 효과적으로 생성합니다. 자연스러운 대화 흐름 설계 능력이 우수합니다.', score: 85 },
+      { title: '제안서 작성', description: 'AI를 활용하여 설득력 있는 제안서 초안을 빠르게 작성합니다.', score: 83 },
+      { title: '고객 니즈 분석', description: '고객 데이터 기반 인사이트 도출에 AI를 잘 활용합니다.', score: 80 },
     ],
     improvements: [
-      '고객 정보 보안 의식 강화',
-      '계약 관련 법적 검토 필요',
+      { title: '고객 정보 보안', description: '고객 데이터를 AI에 입력할 때 민감 정보 보호에 더 주의가 필요합니다.', priority: 'high' },
+      { title: '계약/법적 검토', description: 'AI가 생성한 계약 관련 문구는 반드시 법무 검토를 거쳐야 합니다.', priority: 'high' },
+      { title: '개인화 수준 점검', description: '과도한 개인화가 프라이버시 침해로 느껴지지 않도록 주의하세요.', priority: 'medium' },
     ],
-    recommendation: '영업 업무에 AI를 잘 활용할 수 있습니다. 고객 정보 취급 시 보안에 더욱 주의를 기울이세요.',
+    recommendation: '영업 업무에 AI를 잘 활용할 수 있는 역량을 갖추고 있습니다. 특히 고객 응대와 제안서 작성에서 효율성을 높일 수 있습니다. 다만, 고객 정보 취급 시 보안에 각별히 주의해야 하며, 계약 관련 내용은 AI 출력물을 그대로 사용하지 말고 전문가 검토를 거쳐야 합니다.',
+    nextSteps: [
+      '고객 데이터 AI 활용 가이드라인 수립',
+      '제안서 AI 활용 템플릿 및 검토 프로세스 마련',
+      '고객 응대 스크립트 품질 관리 체계 구축',
+      '영업 성과와 AI 활용도 상관관계 분석',
+    ],
+    industryBenchmark: { avgScore: 68, topScore: 91, yourRank: '상위 25%' },
+    skillGaps: [
+      { skill: '정보 보안', current: 70, required: 90 },
+      { skill: '법적 검토', current: 60, required: 80 },
+      { skill: '결과 검증', current: 72, required: 85 },
+    ],
   },
   DEV: {
     strengths: [
-      '코드 생성 및 리뷰 활용 우수',
-      '기술 문서 작성 능력',
-      '버그 분석 시나리오 이해',
+      { title: '코드 생성', description: 'AI를 활용한 코드 생성 및 리팩토링 능력이 우수합니다. 프롬프트로 요구사항을 명확히 전달합니다.', score: 88 },
+      { title: '기술 문서 작성', description: 'API 문서, README 등 기술 문서를 효과적으로 생성합니다.', score: 85 },
+      { title: '디버깅 지원', description: 'AI를 활용한 버그 분석 및 해결책 도출 능력이 양호합니다.', score: 82 },
     ],
     improvements: [
-      '생성된 코드의 보안 취약점 검토',
-      '라이선스 호환성 확인 필요',
+      { title: '보안 취약점 검토', description: 'AI가 생성한 코드의 보안 취약점을 반드시 검토해야 합니다. SQL 인젝션, XSS 등 일반적인 취약점 체크가 필요합니다.', priority: 'high' },
+      { title: '라이선스 확인', description: '생성된 코드의 출처와 라이선스 호환성을 확인하세요.', priority: 'high' },
+      { title: '테스트 커버리지', description: 'AI 생성 코드에 대한 테스트 케이스 작성을 강화하세요.', priority: 'medium' },
     ],
-    recommendation: '개발 업무에서 AI를 효과적으로 활용할 준비가 되어 있습니다. 생성된 코드의 보안 및 라이선스 검토를 습관화하세요.',
+    recommendation: '개발 업무에서 AI를 효과적으로 활용할 준비가 되어 있습니다. 코드 생성과 문서화에서 높은 효율을 얻을 수 있습니다. 다만, AI가 생성한 코드는 반드시 보안 검토와 테스트를 거쳐야 하며, 라이선스 문제가 없는지 확인해야 합니다. AI는 초안 생성 도구로 활용하고, 최종 코드 품질에 대한 책임은 개발자에게 있습니다.',
+    nextSteps: [
+      'AI 생성 코드 보안 검토 체크리스트 작성',
+      '코드 리뷰 시 AI 활용 가이드라인 수립',
+      '라이선스 호환성 검토 프로세스 마련',
+      'AI 페어 프로그래밍 베스트 프랙티스 정리',
+    ],
+    industryBenchmark: { avgScore: 75, topScore: 94, yourRank: '상위 18%' },
+    skillGaps: [
+      { skill: '보안 검토', current: 70, required: 90 },
+      { skill: '라이선스 이해', current: 65, required: 85 },
+      { skill: '테스트 설계', current: 75, required: 85 },
+    ],
   },
   ADMIN: {
     strengths: [
-      '문서 작성 및 요약 능력',
-      '일정 관리 자동화 이해',
-      '회의록 정리 활용',
+      { title: '문서 작성/요약', description: '보고서, 회의록 등 다양한 문서를 효과적으로 작성하고 요약합니다.', score: 86 },
+      { title: '일정 관리', description: 'AI를 활용한 일정 조율 및 알림 설정 능력이 우수합니다.', score: 82 },
+      { title: '데이터 정리', description: '엑셀 수식, 데이터 정리 등에 AI를 잘 활용합니다.', score: 80 },
     ],
     improvements: [
-      '기밀 문서 취급 시 주의 필요',
-      '정확성 검증 습관화',
+      { title: '기밀 문서 주의', description: '기밀 등급 문서를 AI에 입력하지 않도록 주의가 필요합니다.', priority: 'high' },
+      { title: '정확성 검증', description: 'AI가 요약하거나 생성한 내용의 정확성을 반드시 확인하세요.', priority: 'high' },
+      { title: '자동화 범위 설정', description: '어떤 업무까지 AI 자동화가 적절한지 판단 기준을 마련하세요.', priority: 'medium' },
     ],
-    recommendation: '사무행정 업무에 AI를 잘 활용할 수 있습니다. 기밀 정보 취급 시 AI 도구 사용에 주의하세요.',
+    recommendation: '사무행정 업무에 AI를 잘 활용할 수 있는 역량을 갖추고 있습니다. 문서 작성과 일정 관리에서 큰 효율 향상을 기대할 수 있습니다. 다만, 기밀 정보 취급 시 AI 도구 사용에 신중해야 하며, AI 출력물의 정확성을 항상 검증하는 습관이 필요합니다. 특히 숫자, 날짜, 이름 등 정확성이 중요한 정보는 반드시 이중 확인하세요.',
+    nextSteps: [
+      '문서 보안 등급별 AI 활용 가이드라인 수립',
+      '정확성 검증 체크리스트 작성',
+      '반복 업무 AI 자동화 대상 선정',
+      '팀 내 AI 활용 베스트 프랙티스 공유',
+    ],
+    industryBenchmark: { avgScore: 65, topScore: 88, yourRank: '상위 22%' },
+    skillGaps: [
+      { skill: '정보 보안', current: 72, required: 88 },
+      { skill: '정확성 검증', current: 70, required: 85 },
+      { skill: '자동화 판단', current: 68, required: 80 },
+    ],
   },
 };
 
@@ -549,11 +676,100 @@ export const Results = () => {
           </div>
         </div>
 
-        {/* Rubric-based Feedback */}
+        {/* Part 3 Detailed Results */}
         {DEMO_MODE && (
           <div className="bg-white rounded-lg p-8 border mb-8" style={{ borderColor: COLORS.border }}>
             <div className="flex items-center gap-3 mb-6">
               <FileText className="w-5 h-5" style={{ color: COLORS.gold }} />
+              <h2 className="text-lg font-bold" style={{ color: COLORS.navy }}>Part 3 상세 채점 결과</h2>
+              <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: '#ECFDF5', color: COLORS.success }}>AI 채점 완료</span>
+            </div>
+
+            <div className="space-y-6">
+              {DEMO_PART3_DETAILED.map((task, taskIdx) => (
+                <div key={task.taskId} className="border rounded-lg overflow-hidden" style={{ borderColor: COLORS.border }}>
+                  {/* Task Header */}
+                  <div className="p-4 flex items-center justify-between" style={{ backgroundColor: COLORS.surface }}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-white" style={{ backgroundColor: COLORS.navy }}>
+                        {taskIdx + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-bold" style={{ color: COLORS.navy }}>{task.taskTitle}</h4>
+                        <p className="text-xs" style={{ color: COLORS.textMuted }}>{task.taskDescription}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold" style={{ color: task.score >= 16 ? COLORS.success : task.score >= 12 ? '#CA8A04' : COLORS.error }}>
+                        {task.score}<span className="text-sm" style={{ color: COLORS.textMuted }}>/{task.maxScore}</span>
+                      </div>
+                      <div className="text-xs" style={{ color: COLORS.textMuted }}>{task.gradingTime}</div>
+                    </div>
+                  </div>
+
+                  {/* Criteria Scores */}
+                  <div className="p-4 border-t" style={{ borderColor: COLORS.border }}>
+                    <h5 className="text-sm font-bold mb-3" style={{ color: COLORS.navy }}>채점 기준별 점수</h5>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {task.criteria.map((criterion, idx) => (
+                        <div key={idx} className="p-3 rounded-lg" style={{ backgroundColor: COLORS.surface }}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium" style={{ color: COLORS.navy }}>{criterion.name}</span>
+                            <span className="text-sm font-bold" style={{ color: criterion.score >= criterion.maxScore * 0.8 ? COLORS.success : criterion.score >= criterion.maxScore * 0.6 ? '#CA8A04' : COLORS.error }}>
+                              {criterion.score}/{criterion.maxScore}
+                            </span>
+                          </div>
+                          <div className="w-full rounded-full h-1.5 mb-2" style={{ backgroundColor: COLORS.border }}>
+                            <div className="h-1.5 rounded-full" style={{ width: `${(criterion.score / criterion.maxScore) * 100}%`, backgroundColor: criterion.score >= criterion.maxScore * 0.8 ? COLORS.success : criterion.score >= criterion.maxScore * 0.6 ? '#CA8A04' : COLORS.error }} />
+                          </div>
+                          <p className="text-xs" style={{ color: COLORS.textMuted }}>{criterion.comment}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AI Feedback */}
+                  <div className="p-4 border-t" style={{ borderColor: COLORS.border }}>
+                    <h5 className="text-sm font-bold mb-2" style={{ color: COLORS.navy }}>AI 채점 피드백</h5>
+                    <p className="text-sm mb-4" style={{ color: COLORS.textMuted }}>{task.feedback}</p>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {/* Strengths */}
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: '#ECFDF5' }}>
+                        <h6 className="text-xs font-bold mb-2 flex items-center gap-1" style={{ color: COLORS.success }}>
+                          <CheckCircle2 className="w-3 h-3" /> 잘한 점
+                        </h6>
+                        <ul className="space-y-1">
+                          {task.strengths.map((s, i) => (
+                            <li key={i} className="text-xs" style={{ color: COLORS.navy }}>• {s}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Improvements */}
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: '#FEF9C3' }}>
+                        <h6 className="text-xs font-bold mb-2 flex items-center gap-1" style={{ color: '#CA8A04' }}>
+                          <AlertCircle className="w-3 h-3" /> 개선할 점
+                        </h6>
+                        <ul className="space-y-1">
+                          {task.improvements.map((s, i) => (
+                            <li key={i} className="text-xs" style={{ color: COLORS.navy }}>• {s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Rubric-based Feedback */}
+        {DEMO_MODE && (
+          <div className="bg-white rounded-lg p-8 border mb-8" style={{ borderColor: COLORS.border }}>
+            <div className="flex items-center gap-3 mb-6">
+              <BarChart3 className="w-5 h-5" style={{ color: COLORS.gold }} />
               <h2 className="text-lg font-bold" style={{ color: COLORS.navy }}>루브릭 기반 역량 평가</h2>
             </div>
 
@@ -561,16 +777,19 @@ export const Results = () => {
               {(Object.keys(RUBRIC_FEEDBACK) as IndicatorType[]).map((key) => {
                 const feedback = RUBRIC_FEEDBACK[key];
                 const levelColors = {
-                  excellent: { bg: '#ECFDF5', border: COLORS.success, text: COLORS.success, label: '우수' },
-                  good: { bg: '#FEF9C3', border: '#CA8A04', text: '#CA8A04', label: '양호' },
-                  needs_improvement: { bg: '#FEE2E2', border: COLORS.error, text: COLORS.error, label: '보완 필요' },
+                  excellent: { bg: '#ECFDF5', border: COLORS.success, text: COLORS.success, label: '우수', icon: '★★★' },
+                  good: { bg: '#FEF9C3', border: '#CA8A04', text: '#CA8A04', label: '양호', icon: '★★☆' },
+                  needs_improvement: { bg: '#FEE2E2', border: COLORS.error, text: COLORS.error, label: '보완 필요', icon: '★☆☆' },
                 };
                 const levelStyle = levelColors[feedback.level];
 
                 return (
                   <div key={key} className="p-4 rounded-lg border" style={{ backgroundColor: levelStyle.bg, borderColor: levelStyle.border }}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold" style={{ color: COLORS.navy }}>{indicatorInfo[key].nameKo}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold" style={{ color: COLORS.navy }}>{indicatorInfo[key].nameKo}</span>
+                        <span className="text-xs" style={{ color: levelStyle.text }}>{levelStyle.icon}</span>
+                      </div>
                       <span className="text-xs px-2 py-1 rounded font-medium" style={{ backgroundColor: levelStyle.border, color: 'white' }}>
                         {levelStyle.label}
                       </span>
@@ -588,56 +807,175 @@ export const Results = () => {
           </div>
         )}
 
-        {/* Job-specific Feedback */}
+        {/* Job-specific Feedback - Detailed Version */}
         {DEMO_MODE && (
-          <div className="bg-white rounded-lg p-8 border mb-8" style={{ borderColor: COLORS.border }}>
-            <div className="flex items-center gap-3 mb-6">
-              <Lightbulb className="w-5 h-5" style={{ color: COLORS.gold }} />
-              <h2 className="text-lg font-bold" style={{ color: COLORS.navy }}>직무 대비 피드백</h2>
-              {jobInfo && <span className="text-sm px-3 py-1 rounded" style={{ backgroundColor: COLORS.goldMuted, color: COLORS.navy }}>{jobInfo.jobTitle}</span>}
+          <div className="bg-white rounded-lg border mb-8 overflow-hidden" style={{ borderColor: COLORS.border }}>
+            {/* Header */}
+            <div className="p-6" style={{ backgroundColor: COLORS.navy }}>
+              <div className="flex items-center gap-3 mb-2">
+                <Briefcase className="w-5 h-5" style={{ color: COLORS.gold }} />
+                <h2 className="text-lg font-bold text-white">직무 대비 상세 피드백</h2>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-sm px-3 py-1 rounded" style={{ backgroundColor: COLORS.goldMuted, color: COLORS.navy }}>
+                  {jobInfo?.jobTitle || '인사관리 (HR)'}
+                </span>
+                {(() => {
+                  const jobFeedback = JOB_FEEDBACK[selectedJobCode] || JOB_FEEDBACK['HR'];
+                  return (
+                    <span className="text-sm" style={{ color: COLORS.goldLight }}>
+                      업계 평균 대비 {jobFeedback.industryBenchmark.yourRank}
+                    </span>
+                  );
+                })()}
+              </div>
             </div>
 
             {(() => {
               const jobFeedback = JOB_FEEDBACK[selectedJobCode] || JOB_FEEDBACK['HR'];
               return (
-                <div className="space-y-6">
-                  {/* Strengths */}
-                  <div>
-                    <h3 className="font-bold mb-3 flex items-center gap-2" style={{ color: COLORS.success }}>
-                      <CheckCircle2 className="w-4 h-4" />
-                      강점
+                <div className="p-6">
+                  {/* Industry Benchmark */}
+                  <div className="p-4 rounded-lg mb-6" style={{ backgroundColor: COLORS.surface }}>
+                    <h3 className="font-bold mb-4 flex items-center gap-2" style={{ color: COLORS.navy }}>
+                      <BarChart3 className="w-4 h-4" style={{ color: COLORS.gold }} />
+                      업계 벤치마크 비교
                     </h3>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-2xl font-bold" style={{ color: COLORS.textMuted }}>{jobFeedback.industryBenchmark.avgScore}</div>
+                        <div className="text-xs" style={{ color: COLORS.textMuted }}>업계 평균</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold" style={{ color: COLORS.navy }}>{totalPoints}</div>
+                        <div className="text-xs" style={{ color: COLORS.gold }}>내 점수</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold" style={{ color: COLORS.success }}>{jobFeedback.industryBenchmark.topScore}</div>
+                        <div className="text-xs" style={{ color: COLORS.textMuted }}>상위 10%</div>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <div className="w-full rounded-full h-3" style={{ backgroundColor: COLORS.border }}>
+                        <div className="h-3 rounded-full relative" style={{ width: `${(totalPoints / 100) * 100}%`, backgroundColor: COLORS.navy }}>
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: COLORS.gold }} />
+                        </div>
+                      </div>
+                      <div className="flex justify-between mt-1 text-xs" style={{ color: COLORS.textMuted }}>
+                        <span>0</span>
+                        <span>평균 {jobFeedback.industryBenchmark.avgScore}</span>
+                        <span>100</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Strengths with Scores */}
+                  <div className="mb-6">
+                    <h3 className="font-bold mb-4 flex items-center gap-2" style={{ color: COLORS.success }}>
+                      <Star className="w-4 h-4" />
+                      직무별 강점 분석
+                    </h3>
+                    <div className="space-y-3">
                       {jobFeedback.strengths.map((item, idx) => (
-                        <div key={idx} className="p-3 rounded-lg flex items-start gap-3" style={{ backgroundColor: '#ECFDF5' }}>
-                          <span className="text-sm" style={{ color: COLORS.navy }}>{item}</span>
+                        <div key={idx} className="p-4 rounded-lg border" style={{ backgroundColor: '#ECFDF5', borderColor: '#D1FAE5' }}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-bold" style={{ color: COLORS.navy }}>{item.title}</span>
+                            <span className="text-sm font-bold px-2 py-1 rounded" style={{ backgroundColor: COLORS.success, color: 'white' }}>
+                              {item.score}점
+                            </span>
+                          </div>
+                          <p className="text-sm" style={{ color: COLORS.textMuted }}>{item.description}</p>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Improvements */}
-                  <div>
-                    <h3 className="font-bold mb-3 flex items-center gap-2" style={{ color: '#CA8A04' }}>
+                  {/* Improvements with Priority */}
+                  <div className="mb-6">
+                    <h3 className="font-bold mb-4 flex items-center gap-2" style={{ color: '#CA8A04' }}>
                       <AlertCircle className="w-4 h-4" />
-                      개선 영역
+                      개선 필요 영역
                     </h3>
-                    <div className="space-y-2">
-                      {jobFeedback.improvements.map((item, idx) => (
-                        <div key={idx} className="p-3 rounded-lg flex items-start gap-3" style={{ backgroundColor: '#FEF9C3' }}>
-                          <span className="text-sm" style={{ color: COLORS.navy }}>{item}</span>
+                    <div className="space-y-3">
+                      {jobFeedback.improvements.map((item, idx) => {
+                        const priorityColors = {
+                          high: { bg: '#FEE2E2', border: COLORS.error, label: '높음', labelBg: COLORS.error },
+                          medium: { bg: '#FEF9C3', border: '#CA8A04', label: '중간', labelBg: '#CA8A04' },
+                          low: { bg: COLORS.surface, border: COLORS.border, label: '낮음', labelBg: COLORS.textMuted },
+                        };
+                        const priority = priorityColors[item.priority];
+                        return (
+                          <div key={idx} className="p-4 rounded-lg border" style={{ backgroundColor: priority.bg, borderColor: priority.border }}>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-bold" style={{ color: COLORS.navy }}>{item.title}</span>
+                              <span className="text-xs px-2 py-1 rounded font-medium" style={{ backgroundColor: priority.labelBg, color: 'white' }}>
+                                우선순위: {priority.label}
+                              </span>
+                            </div>
+                            <p className="text-sm" style={{ color: COLORS.textMuted }}>{item.description}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Skill Gaps */}
+                  <div className="mb-6">
+                    <h3 className="font-bold mb-4 flex items-center gap-2" style={{ color: COLORS.navy }}>
+                      <TrendingUp className="w-4 h-4" style={{ color: COLORS.gold }} />
+                      역량 갭 분석
+                    </h3>
+                    <div className="space-y-4">
+                      {jobFeedback.skillGaps.map((gap, idx) => (
+                        <div key={idx}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium" style={{ color: COLORS.navy }}>{gap.skill}</span>
+                            <span className="text-xs" style={{ color: COLORS.textMuted }}>
+                              현재 {gap.current}% → 목표 {gap.required}%
+                            </span>
+                          </div>
+                          <div className="relative w-full rounded-full h-3" style={{ backgroundColor: COLORS.border }}>
+                            {/* Current Level */}
+                            <div className="absolute h-3 rounded-full" style={{ width: `${gap.current}%`, backgroundColor: gap.current >= gap.required ? COLORS.success : '#CA8A04' }} />
+                            {/* Target Marker */}
+                            <div className="absolute top-0 h-3 w-0.5" style={{ left: `${gap.required}%`, backgroundColor: COLORS.navy }} />
+                          </div>
+                          <div className="flex justify-between mt-1">
+                            <span className="text-xs" style={{ color: gap.current >= gap.required ? COLORS.success : '#CA8A04' }}>
+                              {gap.current >= gap.required ? '목표 달성!' : `${gap.required - gap.current}% 개선 필요`}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Recommendation */}
-                  <div className="p-4 rounded-lg" style={{ backgroundColor: COLORS.goldMuted, border: `1px solid ${COLORS.gold}` }}>
+                  <div className="p-4 rounded-lg mb-6" style={{ backgroundColor: COLORS.goldMuted, border: `1px solid ${COLORS.gold}` }}>
                     <h3 className="font-bold mb-2 flex items-center gap-2" style={{ color: COLORS.navy }}>
-                      <Target className="w-4 h-4" style={{ color: COLORS.gold }} />
-                      종합 의견
+                      <Lightbulb className="w-4 h-4" style={{ color: COLORS.gold }} />
+                      종합 평가 의견
                     </h3>
-                    <p className="text-sm" style={{ color: COLORS.navy }}>{jobFeedback.recommendation}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: COLORS.navy }}>{jobFeedback.recommendation}</p>
+                  </div>
+
+                  {/* Next Steps */}
+                  <div>
+                    <h3 className="font-bold mb-4 flex items-center gap-2" style={{ color: COLORS.navy }}>
+                      <BookOpen className="w-4 h-4" style={{ color: COLORS.gold }} />
+                      향후 학습 로드맵
+                    </h3>
+                    <div className="space-y-2">
+                      {jobFeedback.nextSteps.map((step, idx) => (
+                        <div key={idx} className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: COLORS.surface }}>
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: COLORS.navy }}>
+                            {idx + 1}
+                          </div>
+                          <span className="text-sm flex-1" style={{ color: COLORS.navy }}>{step}</span>
+                          <ArrowRight className="w-4 h-4" style={{ color: COLORS.textMuted }} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               );
