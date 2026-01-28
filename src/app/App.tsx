@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ExamProvider } from './context/ExamContext';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Home } from './pages/Home';
 import { Landing } from './pages/Landing';
 import { RulesConsent } from './pages/RulesConsent';
@@ -18,9 +20,11 @@ import { Dashboard } from './pages/Dashboard';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ExamProvider>
-        <BrowserRouter basename="/aict-platform">
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ExamProvider>
+            <BrowserRouter basename="/aict-platform">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/landing" element={<Landing />} />
@@ -38,8 +42,10 @@ export default function App() {
             <Route path="/verify/:certificateId" element={<Verify />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </BrowserRouter>
-      </ExamProvider>
-    </AuthProvider>
+            </BrowserRouter>
+          </ExamProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

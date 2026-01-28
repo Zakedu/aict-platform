@@ -13,10 +13,12 @@ import {
   ExternalLink,
   Sparkles,
   User,
-  LogOut
+  LogOut,
+  Globe
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage, Language } from '../context/LanguageContext';
 
 // ============================================
 // DESIGN SYSTEM: Slate + Green + Glassmorphism
@@ -42,14 +44,79 @@ const colors = {
 // ============================================
 // GNB COMPONENT (Glassmorphism)
 // ============================================
+// 언어 선택 컴포넌트
+const LanguageSelector = () => {
+  const { language, setLanguage } = useLanguage();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const languages: { code: Language; label: string; flag: string }[] = [
+    { code: 'ko', label: '한국어', flag: '🇰🇷' },
+    { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  ];
+
+  const currentLang = languages.find(l => l.code === language);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-white/10"
+        style={{ color: colors.slate[200] }}
+      >
+        <Globe className="w-4 h-4" />
+        <span>{currentLang?.flag}</span>
+        <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div
+            className="absolute right-0 top-full mt-2 py-2 rounded-lg shadow-lg z-50 min-w-[120px]"
+            style={{
+              background: colors.slate[800],
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => {
+                  setLanguage(lang.code);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-white/10 transition-colors ${
+                  language === lang.code ? 'font-bold' : ''
+                }`}
+                style={{ color: language === lang.code ? colors.green[500] : colors.slate[200] }}
+              >
+                <span>{lang.flag}</span>
+                <span>{lang.label}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 const GNB = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const { language } = useLanguage();
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  // 언어별 텍스트
+  const texts = {
+    ko: { exam: '시험 응시', textbook: '교재', login: '로그인', signup: '회원가입' },
+    ja: { exam: '試験を受ける', textbook: '教材', login: 'ログイン', signup: '新規登録' },
+  };
+  const t = texts[language];
 
   return (
     <nav
@@ -73,12 +140,15 @@ const GNB = () => {
 
         {/* Menu */}
         <div className="flex items-center gap-6">
+          {/* Language Selector - 첫 번째 위치 */}
+          <LanguageSelector />
+
           <button
             onClick={() => navigate('/landing')}
             className="text-sm font-medium transition-colors hover:opacity-100"
             style={{ color: colors.slate[200], opacity: 0.8 }}
           >
-            시험 응시
+            {t.exam}
           </button>
           <a
             href="https://zakedu.github.io/genai-book/"
@@ -87,7 +157,7 @@ const GNB = () => {
             className="text-sm font-medium transition-colors hover:opacity-100 flex items-center gap-1"
             style={{ color: colors.slate[200], opacity: 0.8 }}
           >
-            교재 <ExternalLink className="w-3 h-3" />
+            {t.textbook} <ExternalLink className="w-3 h-3" />
           </a>
 
           {/* Auth Buttons */}
@@ -116,14 +186,14 @@ const GNB = () => {
                 className="text-sm font-medium transition-colors hover:opacity-100"
                 style={{ color: colors.slate[200], opacity: 0.8 }}
               >
-                로그인
+                {t.login}
               </button>
               <button
                 onClick={() => navigate('/signup')}
                 className="text-sm font-medium px-4 py-2 rounded-lg transition-all hover:opacity-90"
                 style={{ backgroundColor: colors.green[500], color: colors.white }}
               >
-                회원가입
+                {t.signup}
               </button>
             </>
           )}

@@ -190,3 +190,161 @@ export async function downloadCertificatePDF(data: CertificateData): Promise<voi
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+// 인증서 이미지 생성 (Canvas 기반)
+export async function generateCertificateImage(data: CertificateData): Promise<Blob> {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+
+  // A4 가로 비율 (297mm x 210mm -> 1189px x 842px at 4x)
+  const width = 1189;
+  const height = 842;
+  canvas.width = width;
+  canvas.height = height;
+
+  // 배경색 (아이보리)
+  ctx.fillStyle = '#FCFBF7';
+  ctx.fillRect(0, 0, width, height);
+
+  // 테두리 (네이비)
+  ctx.strokeStyle = '#1E3A5F';
+  ctx.lineWidth = 12;
+  ctx.strokeRect(40, 40, width - 80, height - 80);
+
+  // 내부 장식 테두리 (골드)
+  ctx.strokeStyle = '#C9A227';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(60, 60, width - 120, height - 120);
+
+  // 상단 배너 (네이비)
+  ctx.fillStyle = '#1E3A5F';
+  ctx.fillRect(40, 40, width - 80, 100);
+
+  // 로고 텍스트
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 48px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('AICT Essential', width / 2, 105);
+
+  // 인증서 타이틀
+  ctx.fillStyle = '#1E3A5F';
+  ctx.font = 'bold 56px Arial';
+  ctx.fillText('CERTIFICATE OF ACHIEVEMENT', width / 2, 220);
+
+  // 부제목
+  ctx.fillStyle = '#64748B';
+  ctx.font = '28px Arial';
+  ctx.fillText('AI Competency Certification', width / 2, 260);
+
+  // 수여 대상자 안내
+  ctx.fillStyle = '#1E3A5F';
+  ctx.font = '24px Arial';
+  ctx.fillText('This is to certify that', width / 2, 320);
+
+  // 이름 (골드)
+  ctx.fillStyle = '#C9A227';
+  ctx.font = 'bold 56px Arial';
+  ctx.fillText(data.name, width / 2, 380);
+
+  // 설명문
+  ctx.fillStyle = '#1E3A5F';
+  ctx.font = '22px Arial';
+  ctx.fillText('has successfully demonstrated proficiency in AI literacy and practical application', width / 2, 430);
+  ctx.fillText(`by achieving a score of ${data.score}/100 on the AICT Essential Certification Exam.`, width / 2, 460);
+
+  // 세부 정보 박스
+  ctx.fillStyle = '#F5EFD7';
+  roundedRect(ctx, 160, 490, width - 320, 100, 12);
+  ctx.fill();
+
+  // 세부 정보 헤더
+  ctx.fillStyle = '#64748B';
+  ctx.font = '18px Arial';
+  const col1X = 260;
+  const col2X = width / 2;
+  const col3X = width - 260;
+  ctx.fillText('Certificate ID', col1X, 525);
+  ctx.fillText('Job Role', col2X, 525);
+  ctx.fillText('Validity', col3X, 525);
+
+  // 세부 정보 값
+  ctx.fillStyle = '#1E3A5F';
+  ctx.font = 'bold 22px Arial';
+  ctx.fillText(data.certificateId, col1X, 560);
+  ctx.fillText(data.jobRole, col2X, 560);
+  ctx.fillText(`${data.examDate} ~ ${data.expiryDate}`, col3X, 560);
+
+  // 역량 점수 표시
+  const competencyY = 640;
+  const competencySpacing = (width - 320) / 6;
+  const competencies = [
+    { name: 'Defining', score: data.competencies.defining },
+    { name: 'Prompting', score: data.competencies.prompting },
+    { name: 'Protecting', score: data.competencies.protecting },
+    { name: 'Refining', score: data.competencies.refining },
+    { name: 'Acumen', score: data.competencies.acumen },
+    { name: 'Integrating', score: data.competencies.integrating },
+  ];
+
+  competencies.forEach((comp, index) => {
+    const x = 160 + competencySpacing * index + competencySpacing / 2;
+
+    // 원형 배경
+    ctx.beginPath();
+    ctx.arc(x, competencyY, 32, 0, Math.PI * 2);
+    ctx.fillStyle = '#1E3A5F';
+    ctx.fill();
+
+    // 점수
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 22px Arial';
+    ctx.fillText(`${comp.score}`, x, competencyY + 8);
+
+    // 역량명
+    ctx.fillStyle = '#64748B';
+    ctx.font = '16px Arial';
+    ctx.fillText(comp.name, x, competencyY + 55);
+  });
+
+  // 하단 발급 정보
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#64748B';
+  ctx.font = '18px Arial';
+  ctx.fillText('Issued by AICT (AI Competency Training)', 160, height - 80);
+  ctx.fillText(`Verify at: aict-platform.github.io/verify/${data.certificateId}`, 160, height - 50);
+
+  // Blob으로 변환
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      resolve(blob!);
+    }, 'image/png', 1.0);
+  });
+}
+
+// Canvas용 둥근 사각형 그리기 헬퍼
+function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// 이미지 다운로드
+export async function downloadCertificateImage(data: CertificateData): Promise<void> {
+  const blob = await generateCertificateImage(data);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `AICT_Certificate_${data.certificateId}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
