@@ -11,6 +11,16 @@ const STORAGE_KEYS = {
   USERS_DB: 'aict_users_db',
 } as const;
 
+const TEST_ACCOUNT = {
+  id: 'test_user',
+  email: 'test@aict.kr',
+  password: 'test1234',
+  name: '테스트 계정',
+  phone: '010-0000-0000',
+  createdAt: '2026-01-01',
+  marketingConsent: false,
+} as const;
+
 export interface User {
   id: string;
   email: string;
@@ -63,19 +73,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const seedTestAccount = (users: StoredUser[]) => {
+    if (users.some(user => user.email === TEST_ACCOUNT.email)) {
+      return users;
+    }
+    return [...users, { ...TEST_ACCOUNT }];
+  };
+
   // 사용자 DB 가져오기
   const getUsersDb = (): StoredUser[] => {
     try {
       const db = localStorage.getItem(STORAGE_KEYS.USERS_DB);
-      return db ? JSON.parse(db) : [];
+      const users = db ? JSON.parse(db) : [];
+      const seededUsers = seedTestAccount(users);
+      if (seededUsers.length !== users.length) {
+        localStorage.setItem(STORAGE_KEYS.USERS_DB, JSON.stringify(seededUsers));
+      }
+      return seededUsers;
     } catch {
-      return [];
+      return seedTestAccount([]);
     }
   };
 
   // 사용자 DB 저장
   const saveUsersDb = (users: StoredUser[]) => {
-    localStorage.setItem(STORAGE_KEYS.USERS_DB, JSON.stringify(users));
+    localStorage.setItem(STORAGE_KEYS.USERS_DB, JSON.stringify(seedTestAccount(users)));
   };
 
   // 회원가입

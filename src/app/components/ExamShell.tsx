@@ -318,7 +318,7 @@ export const ExamShell = ({
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto px-4 lg:px-8 py-8 lg:py-12 pb-32">
+          <div className="max-w-6xl mx-auto px-4 lg:px-10 py-8 lg:py-12 pb-32">
             {children}
           </div>
         </main>
@@ -326,7 +326,7 @@ export const ExamShell = ({
 
       {/* Bottom Navigation */}
       <div className="bg-white sticky bottom-0 z-20" style={{ borderTop: `1px solid ${COLORS.border}` }}>
-        <div className="max-w-4xl mx-auto px-4 lg:px-8 py-4">
+        <div className="max-w-6xl mx-auto px-4 lg:px-10 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Previous */}
             <button

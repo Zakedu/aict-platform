@@ -12,7 +12,7 @@ import { getJobTasks, getJobInfo } from '../data/part3-data';
 import { EssentialBadge } from '../components/EssentialBadge';
 import { gradeAllPart3Tasks } from '../services/part3-grading';
 import { IndicatorType } from '../data/questions/types';
-import { JobCode, Part3ScoringResult } from '../data/types/part3';
+import { JobCode, Part3Response, Part3ScoringResult } from '../data/types/part3';
 import {
   calculatePart1Scores,
   calculatePart2Scores,
@@ -661,27 +661,42 @@ export const Results = () => {
     setGradingProgress({ completed: 0, total: part3Tasks.length });
     localStorage.setItem('aict_api_key', apiKey);
 
-    const part3Answers: Record<string, { content: string; chatMessages?: unknown[] }> = {};
-    part3Tasks.forEach(task => {
+    // NOTE: gradeAllPart3Tasks expects tasks + Part3Response[]; normalize stored answers here for traceability.
+    const now = Date.now();
+    const part3Responses: Part3Response[] = part3Tasks.flatMap(task => {
       const answer = answers.find(a => a.partId === 3 && a.questionId === task.id);
-      if (answer?.answer) {
-        try {
-          const parsed = typeof answer.answer === 'string' ? JSON.parse(answer.answer) : answer.answer;
-          part3Answers[task.id] = parsed;
-        } catch {
-          part3Answers[task.id] = { content: String(answer.answer) };
-        }
+      if (!answer?.answer) {
+        return [];
+      }
+      try {
+        const parsed = typeof answer.answer === 'string' ? JSON.parse(answer.answer) : answer.answer;
+        return [{
+          taskId: task.id,
+          taskType: task.taskType,
+          content: typeof parsed?.content === 'string' ? parsed.content : String(parsed?.content ?? ''),
+          chatMessages: Array.isArray(parsed?.chatMessages) ? parsed.chatMessages : undefined,
+          startedAt: now,
+          submittedAt: now,
+        }];
+      } catch {
+        return [{
+          taskId: task.id,
+          taskType: task.taskType,
+          content: String(answer.answer),
+          startedAt: now,
+          submittedAt: now,
+        }];
       }
     });
 
-    if (Object.keys(part3Answers).length === 0) {
+    if (part3Responses.length === 0) {
       setApiError('채점할 답안이 없습니다.');
       setIsGrading(false);
       return;
     }
 
     try {
-      const results = await gradeAllPart3Tasks(selectedJobCode, part3Answers, apiKey, (completed, total) => setGradingProgress({ completed, total }));
+      const results = await gradeAllPart3Tasks(part3Tasks, part3Responses, apiKey, (completed, total) => setGradingProgress({ completed, total }));
       setPart3Results(results);
       setShowApiModal(false);
     } catch {
